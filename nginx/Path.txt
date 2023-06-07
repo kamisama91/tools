@@ -1,0 +1,1 @@
+SET PATH=D:\MesDocuments\Alexandre\Bureau\Nginx\tools\nasm-2.16.03;D:\MesDocuments\Alexandre\Bureau\Nginx\tools\sed-4.9;%PATH%
