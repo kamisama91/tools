@@ -1,0 +1,107 @@
+
+docker run -it --rm -v D:/docker/centos:/home -p 8080:80 centos:7 bash
+
+
+
+----
+----
+
+
+
+vi /etc/yum.repos.d/CentOS-Base.repo
+
+----
+
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://vault.centos.org/7.9.2009/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=http://vault.centos.org/7.9.2009/updates/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://vault.centos.org/7.9.2009/extras/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+[centosplus]
+name=CentOS-$releasever - Plus
+baseurl=http://vault.centos.org/7.9.2009/centosplus/$basearch/
+gpgcheck=1
+enabled=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+
+-----
+
+
+yum clean all
+
+yum groupinstall "Development Tools"
+yum install wget
+yum install gcc gcc-c++ make
+yum install openssl-devel zlib-devel pcre2-devel
+
+
+cd /home
+
+wget https://www.haproxy.org/download/3.1/src/haproxy-3.1.2.tar.gz
+tar -zvxf haproxy-3.1.2.tar.gz
+rm haproxy-3.1.2.tar.gz
+
+
+cd haproxy-3.1.2
+
+make TARGET=linux-glibc USE_OPENSSL=1 USE_PCRE2=1 USE_ZLIB=1 USE_PROMEX=1
+cp haproxy ..
+make clean
+cd ..
+
+mkdir lib
+dependencies=$(ldd ./haproxy | awk '{print $3}')
+for dep in $dependencies; do
+    cp "$dep" ./lib/
+done
+
+
+
+----
+----
+
+
+cd /home
+vi haproxy.cfg
+
+----
+
+defaults
+  mode http
+
+frontend website
+  bind :80
+  http-request return status 200
+
+----
+
+export LD_LIBRARY_PATH=/home/lib
+./haproxy -f haproxy.cfg
+
+
+
+
+
+
+----
+----
+
+docker run -it --rm -v D:/docker/centos:/home -p 8080:80 redhat/ubi9 bash
+
+export LD_LIBRARY_PATH=/home/lib
+./haproxy -f haproxy.cfg
+
