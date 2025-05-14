@@ -1,0 +1,24 @@
+setup-x86_64.exe -q -P wget -P gcc-g++ -P make -P ldd -P libssl-devel -P zlib-devel -P lua-devel -P libpcre2-devel
+
+wget https://www.haproxy.org/download/3.1/src/haproxy-3.1.2.tar.gz
+tar xzvf haproxy-3.1.2.tar.gz
+rm -rf ./haproxy-3.1.2.tar.gz
+cd haproxy-3.1.2
+
+sed -i 's/--export-dynamic/--export-all-symbols/g' Makefile
+
+make TARGET=cygwin \
+USE_OPENSSL=1 \
+USE_PCRE2=1 \
+USE_ZLIB=1 \
+USE_LUA=1 LUA_LIB_NAME=lua5.3 \
+USE_PROMEX=1
+
+mkdir /cygdrive/c/haproxy
+cp ./haproxy.exe /cygdrive/c/haproxy
+
+cd /cygdrive/c/haproxy
+dependencies=$(ldd ./haproxy.exe | awk '{print $3}')
+for dep in $dependencies; do
+    cp "$dep" .
+done
